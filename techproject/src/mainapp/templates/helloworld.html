@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Hello {{user | title}}!{% endblock %}
+
+{% block header %}Hello {{user | title}}!{% endblock %}
+
+{% block content %}
+<!--passing in the variable user to the title and formating it with title case-->
+<h1>Hello {{ user | title }}!</h1>
+
+
+
+
+
+{% endblock %}
+
+

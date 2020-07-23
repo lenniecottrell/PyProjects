@@ -1,7 +1,9 @@
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from . import models
-from models import Product
+from .models import Product
+from .forms import ProductForm
+
 
 
 def admin_console(request):
@@ -9,4 +11,56 @@ def admin_console(request):
     return render(request, 'products/products_page.html', {'products': products})
 
 
-# Create your views here.
+def details(request, pk):
+    pk = int(pk)
+    item = get_object_or_404(Product, pk=pk) #the first pk is the dictionary object, the second pk is the value
+    form = ProductForm(data=request.POST or None, instance=item) #get the POSTed information from the user's request on the form, and create an instance of it
+    if request.method == 'POST':
+        if form.is_valid():
+            form2 = form.save(commit=False)
+            form2.save()
+            return redirect('admin_console')
+        else:
+            print(form.errors)
+    else:
+        return render(request, 'products/present_product.html', {'form':form})
+
+
+def delete(request, pk):
+    pk = int(pk)
+    item = get_object_or_404(Product, pk=pk) #access the database
+    if request.method == 'POST':
+        item.delete()
+        return redirect('admin_console')
+    context = {"item": item,}
+    return render(request, 'products/confirmDelete.html', context)
+
+
+def confirmed(request):
+    if request.method == 'POST':
+        #creates a form instance and binds data to it
+        form = ProductForm(request.POST or None)
+        if form.is_valid():
+            form.delete()
+            return redirect('admin_console')
+    else:
+        return redirect('admin_console')
+
+def createRecord(request):
+    form = ProductForm(request.POST or None)
+    if form.is_valid():
+        form.save()
+        return redirect('admin_console')
+    else: #if the form isn't valid
+        print(form.errors) #print the errors from the form
+        form = ProductForm() #create an empty version of the form
+    context = {
+        'form': form, #pass the new form as a dictionary object
+    }
+    return render(request, 'products/createRecord.html', context) #start over
+
+
+
+
+
+
